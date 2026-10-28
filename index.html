@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Weekend food picks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #eef3f1;
+    --surface: #ffffff;
+    --ink: #14263a;
+    --muted: #5d6e7e;
+    --line: #cfdad6;
+    --accent: #1f4fe0;
+    --accent-ink: #ffffff;
+    --accent-soft: #dfe7ff;
+    --locked: #e4eae8;
+    --locked-ink: #8a9893;
+    --done: #12805c;
+    color-scheme: light;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1a26;
+      --surface: #172636;
+      --ink: #eaf1f6;
+      --muted: #9fb0bf;
+      --line: #2b3f53;
+      --accent: #7c9bff;
+      --accent-ink: #0b1220;
+      --accent-soft: #223559;
+      --locked: #1b2c3d;
+      --locked-ink: #62768a;
+      --done: #4fd1a1;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f1a26; --surface: #172636; --ink: #eaf1f6; --muted: #9fb0bf; --line: #2b3f53;
+    --accent: #7c9bff; --accent-ink: #0b1220; --accent-soft: #223559;
+    --locked: #1b2c3d; --locked-ink: #62768a; --done: #4fd1a1; color-scheme: dark;
+  }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 16px; line-height: 1.5;
+  }
+  main { max-width: 680px; margin: 0 auto; padding: 32px 18px 120px; }
+  h1 {
+    font-family: "Bricolage Grotesque", "DM Sans", system-ui, sans-serif;
+    font-weight: 800; font-size: clamp(2.4rem, 9vw, 3.6rem); line-height: 1; letter-spacing: -0.02em;
+    margin: 0 0 12px;
+  }
+  .intro { color: var(--muted); margin: 0 0 20px; max-width: 46ch; }
+  .progress { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; font-weight: 600; font-size: 0.95rem; }
+  .bar { flex: 1; height: 8px; border-radius: 99px; background: var(--line); overflow: hidden; }
+  .bar > i { display: block; height: 100%; width: 0; background: var(--accent); border-radius: 99px; transition: width .25s ease; }
+ 
+  .day { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 20px 18px 8px; margin-bottom: 18px; }
+  .day h2 {
+    font-family: "Bricolage Grotesque", "DM Sans", system-ui, sans-serif;
+    font-weight: 800; font-size: 1.7rem; letter-spacing: -0.01em; margin: 0 0 14px;
+  }
+  .meal { padding: 14px 0 18px; border-top: 1px solid var(--line); }
+  .meal:first-of-type { border-top: 0; padding-top: 0; }
+  .meal-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+  .meal-head h3 { margin: 0; font-size: 1.05rem; font-weight: 600; }
+  .meal-head .state { font-size: 0.85rem; color: var(--muted); }
+  .meal.filled .state { color: var(--done); font-weight: 600; }
+  .opts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  @media (max-width: 420px) { .opts { grid-template-columns: 1fr; } }
+  .opt {
+    appearance: none; font: inherit; text-align: left; cursor: pointer;
+    background: var(--bg); color: var(--ink); border: 1.5px solid var(--line);
+    border-radius: 12px; padding: 12px 14px; min-height: 52px;
+    display: flex; flex-direction: column; justify-content: center; gap: 2px;
+    transition: border-color .15s, background .15s;
+  }
+  .opt:hover:not(:disabled) { border-color: var(--accent); }
+  .opt:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .opt .name { font-weight: 600; }
+  .opt .note { font-size: 0.78rem; color: var(--muted); }
+  .opt[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .opt[aria-pressed="true"] .note { color: var(--accent-ink); opacity: .85; }
+  .opt:disabled { background: var(--locked); color: var(--locked-ink); border-style: dashed; cursor: not-allowed; }
+  .opt:disabled .name { text-decoration: line-through; }
+  .opt:disabled .note { color: var(--locked-ink); }
+ 
+  .monday { border-color: var(--accent); }
+  .monday .fixed { display: flex; align-items: center; gap: 14px; padding: 4px 0 14px; }
+  .monday .tag { background: var(--accent-soft); color: var(--accent); font-size: .8rem; font-weight: 600; padding: 4px 10px; border-radius: 99px; white-space: nowrap; }
+  .monday .dish { font-weight: 600; font-size: 1.05rem; }
+  .monday .sub { color: var(--muted); font-size: .9rem; }
+ 
+  .send {
+    position: fixed; left: 0; right: 0; bottom: 0;
+    padding: 14px 18px calc(14px + env(safe-area-inset-bottom, 0px));
+    background: var(--surface); border-top: 1px solid var(--line);
+  }
+  .send-inner { max-width: 680px; margin: 0 auto; }
+  .send p { margin: 0; color: var(--muted); font-size: .92rem; text-align: center; }
+  .btn {
+    appearance: none; font: inherit; font-weight: 600; cursor: pointer; width: 100%;
+    background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 12px; padding: 14px 18px; font-size: 1rem;
+  }
+  .btn:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+  .btn.ghost { background: transparent; color: var(--accent); border: 1.5px solid var(--accent); margin-top: 8px; }
+  .linkbox { display: flex; gap: 8px; margin-top: 10px; }
+  .linkbox input {
+    flex: 1; min-width: 0; font: inherit; font-size: .85rem; padding: 10px 12px; border-radius: 10px;
+    border: 1.5px solid var(--line); background: var(--bg); color: var(--ink);
+  }
+  .opt.custom-opt { grid-column: 1 / -1; border-style: dashed; }
+  .opt.custom-opt[aria-pressed="true"] { border-style: solid; }
+  .custom-input {
+    display: block; width: 100%; margin-top: 8px; font: inherit; padding: 12px 14px; border-radius: 12px;
+    border: 1.5px solid var(--accent); background: var(--bg); color: var(--ink);
+  }
+  .custom-input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  [hidden] { display: none !important; }
+ 
+  /* Summary (shared link) view */
+  .sum-row { display: flex; justify-content: space-between; gap: 16px; padding: 12px 0; border-top: 1px solid var(--line); }
+  .sum-row:first-of-type { border-top: 0; }
+  .sum-row .m { color: var(--muted); }
+  .sum-row .v { font-weight: 600; text-align: right; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Weekend food picks</h1>
+ 
+  <!-- Picker view -->
+  <section id="picker">
+    <p class="intro">Choose something for each meal. Each listed option can only be used once, so once it’s taken it’s greyed out everywhere else. Tap a choice again to change it, or choose “Something else” to type your own.</p>
+    <div class="progress"><span id="count">0 of 5 chosen</span><div class="bar"><i id="barfill"></i></div></div>
+    <div id="days"></div>
+ 
+    <div class="day monday">
+      <h2>Monday</h2>
+      <div class="fixed">
+        <span class="tag">Already chosen</span>
+        <div>
+          <div class="dish">Roti Canai</div>
+          <div class="sub">Lunch at Gopal’s Corner</div>
+        </div>
+      </div>
+    </div>
+  </section>
+ 
+  <!-- Summary view (opened from a shared link) -->
+  <section id="summary" hidden>
+    <p class="intro">Here’s what was chosen for the weekend.</p>
+    <div id="sumdays"></div>
+    <button class="btn ghost" id="editBtn" type="button">Change these picks</button>
+  </section>
+</main>
+ 
+<div class="send" id="sendBar" hidden>
+  <div class="send-inner">
+    <button class="btn" id="copyBtn" type="button">Copy link to send</button>
+    <div class="linkbox" id="linkbox" hidden>
+      <input id="linkInput" readonly aria-label="Link to your picks">
+    </div>
+    <p id="copyMsg" role="status" hidden></p>
+  </div>
+</div>
+ 
+<script>
+(function () {
+  var BASE = ""; // empty = use the page's own address, so the copied link works wherever it is hosted
+ 
+  var BREAKFAST = [
+    { name: "McDonald’s Breakfast" },
+    { name: "Acai" },
+    { name: "Oats" },
+    { name: "No breakfast" }
+  ];
+  var LUNCH = [
+    { name: "Sam’s Chicken" },
+    { name: "Costco Mac n Cheese" },
+    { name: "Steak Sandwich & Frites" },
+    { name: "Fu Sheng" }
+  ];
+  var DAYS = [
+    { day: "Saturday", slots: [
+      { id: 0, label: "Breakfast", pool: "b" },
+      { id: 1, label: "Lunch", pool: "l" } ] },
+    { day: "Sunday", slots: [
+      { id: 2, label: "Breakfast", pool: "b" },
+      { id: 3, label: "Lunch", pool: "l" },
+      { id: 4, label: "Dinner", pool: "l" } ] }
+  ];
+  var SLOTS = [];
+  DAYS.forEach(function (d) { d.slots.forEach(function (s) { s.day = d.day; SLOTS[s.id] = s; }); });
+  var CUSTOM = -1;
+  var picks = [null, null, null, null, null];
+  var customText = ["", "", "", "", ""];
+  var mealEls = [];
+  var focusSlot = null;
+  function isFilled(i) { return picks[i] != null && (picks[i] !== CUSTOM || customText[i].trim() !== ""); }
+  function pickName(i) { return picks[i] === CUSTOM ? customText[i].trim() : optsFor(SLOTS[i].pool)[picks[i]].name; }
+  function b64e(s) {
+    var bytes = new TextEncoder().encode(s), bin = "";
+    for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+    return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  }
+  function b64d(s) {
+    s = s.replace(/-/g, "+").replace(/_/g, "/");
+    while (s.length % 4) s += "=";
+    var bin = atob(s), bytes = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return new TextDecoder().decode(bytes);
+  }
+ 
+  function optsFor(pool) { return pool === "b" ? BREAKFAST : LUNCH; }
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+ 
+  /* ---- token <-> picks ---- */
+  function encode() {
+    return "pick." + SLOTS.map(function (s, i) {
+      if (!isFilled(i)) return "x";
+      return picks[i] === CUSTOM ? "c" + b64e(customText[i].trim()) : String(picks[i]);
+    }).join(".");
+  }
+  function decode(hash) {
+    var m = /^#?pick\.(.+)$/.exec(hash || "");
+    if (!m) return null;
+    var parts = m[1].split(".");
+    if (parts.length !== 5) return null;
+    var out = [], txt = ["", "", "", "", ""];
+    for (var i = 0; i < 5; i++) {
+      var s = parts[i];
+      if (s === "x") { out.push(null); }
+      else if (s.charAt(0) === "c" && s.length > 1) {
+        var t;
+        try { t = b64d(s.slice(1)).slice(0, 40); } catch (e) { return null; }
+        if (!t.trim()) return null;
+        out.push(CUSTOM); txt[i] = t;
+      }
+      else if (/^[0-9]$/.test(s)) {
+        var v = parseInt(s, 10);
+        if (v >= optsFor(SLOTS[i].pool).length) return null;
+        out.push(v);
+      }
+      else return null;
+    }
+    var seen = {};
+    for (var j = 0; j < 5; j++) {
+      if (out[j] == null || out[j] === CUSTOM) continue;
+      var k = SLOTS[j].pool + out[j];
+      if (seen[k]) return null;
+      seen[k] = true;
+    }
+    return { picks: out, text: txt };
+  }
+  function shareLink() {
+    var base = /^https?:\/\//.test(BASE) ? BASE : (location.href.split("#")[0]);
+    return base.split("#")[0] + "#" + encode();
+  }
+ 
+  /* ---- picker ---- */
+  function takenElsewhere(slot, index) {
+    for (var i = 0; i < SLOTS.length; i++) {
+      if (i !== slot.id && SLOTS[i].pool === slot.pool && picks[i] === index) return SLOTS[i];
+    }
+    return null;
+  }
+ 
+  function render() {
+    var wrap = document.getElementById("days");
+    wrap.innerHTML = "";
+    DAYS.forEach(function (d) {
+      var card = el("div", "day");
+      card.appendChild(el("h2", null, d.day));
+      d.slots.forEach(function (slot) {
+        var meal = el("div", "meal" + (isFilled(slot.id) ? " filled" : ""));
+        var head = el("div", "meal-head");
+        head.appendChild(el("h3", null, slot.label));
+        var stateEl = el("span", "state", isFilled(slot.id) ? "Chosen" : (picks[slot.id] === CUSTOM ? "Type your choice" : "Pick one"));
+        head.appendChild(stateEl);
+        mealEls[slot.id] = { meal: meal, state: stateEl };
+        meal.appendChild(head);
+        var grid = el("div", "opts");
+        optsFor(slot.pool).forEach(function (opt, idx) {
+          var btn = el("button", "opt");
+          btn.type = "button";
+          btn.appendChild(el("span", "name", opt.name));
+          var other = takenElsewhere(slot, idx);
+          if (other) {
+            btn.disabled = true;
+            btn.appendChild(el("span", "note", "Taken for " + other.day + " " + other.label.toLowerCase()));
+          }
+          btn.setAttribute("aria-pressed", picks[slot.id] === idx ? "true" : "false");
+          btn.addEventListener("click", function () {
+            picks[slot.id] = picks[slot.id] === idx ? null : idx;
+            render();
+          });
+          grid.appendChild(btn);
+        });
+        var cbtn = el("button", "opt custom-opt");
+        cbtn.type = "button";
+        cbtn.appendChild(el("span", "name", "Something else"));
+        cbtn.appendChild(el("span", "note", "Type your own option"));
+        cbtn.setAttribute("aria-pressed", picks[slot.id] === CUSTOM ? "true" : "false");
+        cbtn.addEventListener("click", function () {
+          if (picks[slot.id] === CUSTOM) { picks[slot.id] = null; }
+          else { picks[slot.id] = CUSTOM; focusSlot = slot.id; }
+          render();
+        });
+        grid.appendChild(cbtn);
+        meal.appendChild(grid);
+        if (picks[slot.id] === CUSTOM) {
+          var inp = el("input", "custom-input");
+          inp.type = "text"; inp.id = "custom-" + slot.id; inp.maxLength = 40;
+          inp.placeholder = "What would you like for " + d.day + " " + slot.label.toLowerCase() + "?";
+          inp.setAttribute("aria-label", d.day + " " + slot.label + " – your own option");
+          inp.value = customText[slot.id];
+          inp.addEventListener("input", function () { customText[slot.id] = inp.value; updateStatus(); });
+          meal.appendChild(inp);
+        }
+        card.appendChild(meal);
+      });
+      wrap.appendChild(card);
+    });
+ 
+    updateStatus();
+    if (focusSlot != null) {
+      var f = document.getElementById("custom-" + focusSlot);
+      if (f) f.focus();
+      focusSlot = null;
+    }
+  }
+ 
+  function updateStatus() {
+    var n = 0;
+    for (var i = 0; i < 5; i++) {
+      var ok = isFilled(i);
+      if (ok) n++;
+      var me = mealEls[i];
+      if (me) {
+        me.meal.className = "meal" + (ok ? " filled" : "");
+        me.state.textContent = ok ? "Chosen" : (picks[i] === CUSTOM ? "Type your choice" : "Pick one");
+      }
+    }
+    document.getElementById("count").textContent = n + " of 5 chosen";
+    document.getElementById("barfill").style.width = (n / 5 * 100) + "%";
+    document.getElementById("sendBar").hidden = n !== 5;
+    document.getElementById("linkbox").hidden = true;
+    document.getElementById("copyMsg").hidden = true;
+    document.getElementById("copyBtn").textContent = "Copy link to send";
+  }
+ 
+  /* ---- copy ---- */
+  function fallbackCopy(text) {
+    var ta = document.createElement("textarea");
+    ta.value = text; ta.setAttribute("readonly", "");
+    ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select();
+    var ok = false;
+    try { ok = document.execCommand("copy"); } catch (e) {}
+    document.body.removeChild(ta);
+    return ok;
+  }
+  document.getElementById("copyBtn").addEventListener("click", function () {
+    var link = shareLink();
+    var input = document.getElementById("linkInput");
+    var box = document.getElementById("linkbox");
+    var msg = document.getElementById("copyMsg");
+    var btn = document.getElementById("copyBtn");
+    input.value = link;
+    box.hidden = false;
+    function done(ok) {
+      msg.hidden = false;
+      if (ok) { btn.textContent = "Link copied"; msg.textContent = "Paste it into a message to send your picks."; }
+      else { input.focus(); input.select(); msg.textContent = "Couldn’t copy automatically. Select the link above and copy it."; }
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(link).then(function () { done(true); }, function () { done(fallbackCopy(link)); });
+    } else { done(fallbackCopy(link)); }
+  });
+ 
+  /* ---- summary view ---- */
+  function showSummary(p) {
+    var wrap = document.getElementById("sumdays");
+    wrap.innerHTML = "";
+    DAYS.forEach(function (d) {
+      var card = el("div", "day");
+      card.appendChild(el("h2", null, d.day));
+      d.slots.forEach(function (slot) {
+        var row = el("div", "sum-row");
+        row.appendChild(el("span", "m", slot.label));
+        row.appendChild(el("span", "v", pickName(slot.id)));
+        card.appendChild(row);
+      });
+      wrap.appendChild(card);
+    });
+    var mon = el("div", "day monday");
+    mon.appendChild(el("h2", null, "Monday"));
+    var row = el("div", "sum-row");
+    row.appendChild(el("span", "m", "Lunch"));
+    row.appendChild(el("span", "v", "Roti Canai at Gopal’s Corner"));
+    mon.appendChild(row);
+    wrap.appendChild(mon);
+    document.getElementById("picker").hidden = true;
+    document.getElementById("summary").hidden = false;
+    document.getElementById("sendBar").hidden = true;
+  }
+  document.getElementById("editBtn").addEventListener("click", function () {
+    document.getElementById("summary").hidden = true;
+    document.getElementById("picker").hidden = false;
+    render();
+  });
+ 
+  /* ---- start ---- */
+  var initial = decode(location.hash);
+  // A shared link only shows a summary when every meal is chosen
+  if (initial && initial.picks.every(function (v) { return v != null; })) {
+    picks = initial.picks;
+    customText = initial.text;
+    showSummary(initial.picks);
+  } else {
+    render();
+  }
+})();
+</script>
+</body>
+</html>
